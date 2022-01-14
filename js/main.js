@@ -28,13 +28,13 @@ function loadData() {
  * Builds up the Spotify Song Visualizer
  */
 function showData(){ 
-    const barHeightMax = 50;
+    const barHeightMax = 15;
     const innerWidth = data.length
     const n = data.length;
-    const radius = 20;
-    const nPerTurn = 40;
+    const radius = 10;
+    const nPerTurn = 55;
     const angleStep = (Math.PI * 2) / nPerTurn;
-    const heightStep = 0.1;
+    const heightStep = 0.06;
 
     // ADD EVENTLISTENER FOR INTERACTION ELEMENTS
     //======================================================================================================//
@@ -58,7 +58,7 @@ function showData(){
     const y = d3.scaleLinear().range([0, barHeightMax]);
     const c = d3.scaleLinear()
         .interpolate(d3.interpolateHcl)
-        .range([d3.rgb('#e7aeee'), d3.rgb("#94e9e5")]);
+        .range([d3.rgb('#3f5efb'), d3.rgb("#fc466b")]);
 
     // TODO: Color of the 12 segment bar pitches (one differently colored section per pitch) 
     // const c = d3.scaleLinear()
@@ -78,7 +78,7 @@ function showData(){
     //======================================================================================================//
    
     const createBar = (d) => {
-        let geometry = new THREE.BoxGeometry(1*y(d.duration)*0.5,1,1);
+        let geometry = new THREE.BoxGeometry(1*y(d.duration),1,1);
         let material = new THREE.MeshPhongMaterial( {color: c(d.loudness_max), shininess: 10})
         let bar = new THREE.Mesh( geometry, material );
         scene.add( bar );
@@ -94,10 +94,10 @@ function showData(){
           // Set Object Position
         bar.position.set(
             // Math.cos(angleStep * i) * radius,
-            (Math.cos(angleStep * d.segment) * radius),
+            (Math.cos(angleStep * d.segment) * (radius + y(d.duration) / 2)),
 
             heightStep * d.segment,
-            Math.sin(angleStep * d.segment) * radius
+            Math.sin(angleStep * d.segment) * (radius + y(d.duration) / 2)
         );
 
         // Rotate Object
@@ -158,7 +158,7 @@ function showData(){
     //======================================================================================================//
     
     // Adjust camera position to make the object visable
-    camera.position.set(0, 20, 100);
+    camera.position.set(0, 50, 20);
     // camera.position.set(0, 15, 0);
 
     // Position scene vertically
