@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="de">
+    <head>
+        <meta charset="utf-8">
+
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+        <script src='https://s3-us-west-2.amazonaws.com/s.cdpn.io/2666677/OrbitControls.js'></script>
+        <script src="http://d3js.org/d3.v6.js"></script>
+        <script src="js/main.js"></script>
+
+        <title>Spotify Song Visualization</title>
+        <meta name="description" content="Spotify Song Visualization">
+
+        <style>
+            /* IMPORTS */
+            /*****************************************************************************************/
+
+            @import url(https://fonts.googleapis.com/css2?family=Comfortaa:wght@300);
+
+            /* VARIABLES */
+            /*****************************************************************************************/
+
+            :root {
+            --font-family: 'Comfortaa', cursive;
+            --color: #EBEBEE;
+            --background-color-inner: #3c3f4b; /* #494d5c;*/
+            --background-color-outer:  #000001; /*#252830*/
+            }
+
+            /* GLOBAL */
+            /*****************************************************************************************/
+
+            html,body, canvas{
+                width: 100%;
+                height: 100%;
+            }
+
+            body {
+
+                margin: 0;
+
+                /*Background*/
+                background-color: var(--background-color);
+                background: radial-gradient(circle,  var(--background-color-inner) 0%, var(--background-color-outer) 100%); 
+
+
+                /*Font*/
+                color: var(--color);
+                font-family: var(--font-family);
+
+            }
+
+        </style>
+
+    </head>
+    <body>
+    </body>
+</html>
