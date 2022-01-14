@@ -1,7 +1,5 @@
 
-var isPlay = false;
-var is3D = true;
-var inTransition = false;
+var isPlay = true;
 var data = null;
 
 function init() {
@@ -30,9 +28,13 @@ function loadData() {
  * Builds up the Spotify Song Visualizer
  */
 function showData(){ 
-    const barMargin = 0.1;
-    const barHeightMax = 10;
-    const barWidth = barMargin * 2;
+    const barHeightMax = 50;
+    const innerWidth = data.length
+    const n = data.length;
+    const radius = 20;
+    const nPerTurn = 40;
+    const angleStep = (Math.PI * 2) / nPerTurn;
+    const heightStep = 0.1;
 
     // ADD EVENTLISTENER FOR INTERACTION ELEMENTS
     //======================================================================================================//
@@ -51,64 +53,56 @@ function showData(){
     // DEFINE SCALES
     //======================================================================================================//
    
-    // Create scales 
-    // const x = d3.scaleBand().range([0, innerWidth]);
-    // const z = d3.scaleBand().range([0, -innerWidth]);
-
-    // Length of the segment bar
+    // Create scales for the position and lenght of the segment bars
+    const x = d3.scaleBand().range([0, innerWidth]);
     const y = d3.scaleLinear().range([0, barHeightMax]);
+    const c = d3.scaleLinear()
+        .interpolate(d3.interpolateHcl)
+        .range([d3.rgb('#e7aeee'), d3.rgb("#94e9e5")]);
 
-    // Color of the 12 segment bar pitches (one differently colored section per pitch) 
+    // TODO: Color of the 12 segment bar pitches (one differently colored section per pitch) 
     // const c = d3.scaleLinear()
     //     .interpolate(d3.interpolateHcl)
     //     .range([d3.rgb('#618DFB'), d3.rgb("#431A42")]);
 
     // Scale the range of the data
-    const duration_domain = d3.extent(data, function(d) { return  (d.duration)});
-    // const cat2_set = new Set(data.map(function(d){ return d.cat2 }));
-    // const value_max = d3.max(data, function(d) { return  (d.value)});
-    // const value_min = d3.min(data, function(d) { return  (d.value)});
+    const y_domain = d3.extent(data, function(d) { return  (d.duration)});
+    const x_domain = d3.map(data, (d) => { return d.segment })
+    const c_domain = d3.extent(data, function(d) { return  (d.loudness_max)});
 
-    y.domain(duration_domain);
-    // z.domain(cat2_set);
-    // y.domain([0, value_max])
-    // c.domain([value_max, 0])
-
-    // ADD PLATFORM
-    //======================================================================================================//
-
+    y.domain(y_domain);
+    x.domain(x_domain);
+    c.domain(c_domain)
 
     // ADD BARS
     //======================================================================================================//
    
-    const createBar = (value, i) => {
-        let geometry = new THREE.BoxGeometry(1,1,1);
-        let material = new THREE.MeshPhongMaterial( {color: "#eeeeee", shininess: 10})
+    const createBar = (d) => {
+        let geometry = new THREE.BoxGeometry(1*y(d.duration)*0.5,1,1);
+        let material = new THREE.MeshPhongMaterial( {color: c(d.loudness_max), shininess: 10})
         let bar = new THREE.Mesh( geometry, material );
         scene.add( bar );
-    
-        bar = scaleBar(bar, value)
-        bar = positionBar(bar, value, i)
+        bar = positionBar(bar, d)
             
         return bar
     }
 
-    // Scale the bar according to the individual values in the data and the global bar settings
-    const scaleBar = (bar, value) => {
-        bar.scale.y = y(value);
-        bar.scale.x = barWidth; 
-        bar.scale.z = barWidth;
-        bar.maxScaleY = bar.scale.y;
-
-        return bar;
-    }
-    
     // Position the bar on x axes by shifting it depending on the index in the data
     // the defined bar dimensions and the platform height
-    const positionBar = (bar, value, i) => {
-        bar.position.x = bar.position.x + (barWidth * i)
-        // bar.position.z = z(cat2) + barWidth/2 + innerWidth/2
-        bar.position.y += y(value) /2
+    const positionBar = (bar, d) => {
+
+          // Set Object Position
+        bar.position.set(
+            // Math.cos(angleStep * i) * radius,
+            (Math.cos(angleStep * d.segment) * radius),
+
+            heightStep * d.segment,
+            Math.sin(angleStep * d.segment) * radius
+        );
+
+        // Rotate Object
+        bar.rotation.y = -angleStep * d.segment;
+
         bar.maxPositionY = bar.position.y;
 
         return bar;
@@ -118,25 +112,13 @@ function showData(){
     bars = []
     data.forEach((d, i) => { 
         bar = {
-            mesh: createBar(d.duration, i),
+            mesh: createBar(d, i),
             d: d,
             i: i
         }
         bars.push(bar);
         scene.add(bar.mesh);
     })
-
-    // ADD TICK LABELS
-    //======================================================================================================//
-
-    
-    // ADD LEGEND
-    //======================================================================================================//
-
-
-    // ADD TITLE
-    //======================================================================================================//
-
 
     // ADD LIGHT 
     //======================================================================================================//
@@ -176,11 +158,15 @@ function showData(){
     //======================================================================================================//
     
     // Adjust camera position to make the object visable
-    camera.position.set(0, 0, barWidth * data.length/2 * 1.2);
+    camera.position.set(0, 20, 100);
     // camera.position.set(0, 15, 0);
 
     // Position scene vertically
-    scene.position.x -= barWidth * data.length/2
+    scene.position.y -= n * heightStep / 2;
+
+    // TODO: REMOVE AXIS HELPER
+    // const axesHelper = new THREE.AxesHelper( 100 );
+    // scene.add( axesHelper );
 
     // ITERACTION 
     //======================================================================================================//
@@ -198,16 +184,8 @@ function showData(){
         // Set up endless repetition/ loop
         requestAnimationFrame(animate)
 
-        if(!is3D & inTransition) {
-            transitionTo2D()
-        }
-
-        if(is3D & inTransition) {
-            transitionTo3D()
-        }
-
         if (isPlay) {
-            scene.rotation.y -= 0.01
+            scene.rotation.y -= 0.001
         }
 
     }
