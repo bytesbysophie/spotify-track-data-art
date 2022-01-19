@@ -74,7 +74,7 @@ function showData(){
     //======================================================================================================//
    
     const n = data.length;
-    const radius = 10;
+    const radius = 8;
     const nPerTurn = 60;
     const angleStep = (Math.PI * 2) / nPerTurn;
     const heightStep = 0.06;
@@ -84,7 +84,7 @@ function showData(){
         // const material = new THREE.MeshPhongMaterial( {color: c(d.loudness_max), shininess: 10})
         // let bar = new THREE.Mesh( geometry, material );
         
-        const geometry = new THREE.CylinderGeometry(1,1,1*y(d.duration),10, 10);
+        const geometry = new THREE.CylinderBufferGeometry(0.5, 0.5, 1*y(d.duration),50, 10);
         const material = new THREE.MeshPhongMaterial( {color: c(d.loudness_max), shininess: 10})
         let bar = new THREE.Mesh( geometry, material );
 
@@ -100,16 +100,15 @@ function showData(){
 
         let evenTurn = false; //d.segment%110 > nPerTurn;
         let radiusFactor = evenTurn ? 1.2 : 1;
-        // bar.rotation.z += 90;
-        // bar.translateOnAxis( (1,0,0), 3 )
+
+        // Rotate Object
+        bar.rotation.z = (angleStep * d.segment) +  Math.PI / 2;
+        bar.rotation.x = Math.PI / 2;
 
         // Set Object Position
         bar.position.x = Math.cos(angleStep * d.segment) * (radius * radiusFactor + y(d.duration) / 2);
         bar.position.y = heightStep * d.segment;
         bar.position.z = Math.sin(angleStep * d.segment) * (radius * radiusFactor + y(d.duration) / 2);
-
-        // Rotate Object
-        bar.rotation.y = -angleStep * d.segment;
 
         bar.maxPositionY = bar.position.y;
 
