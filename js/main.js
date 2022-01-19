@@ -80,9 +80,14 @@ function showData(){
     const heightStep = 0.06;
 
     const createBar = (d) => {
-        let geometry = new THREE.BoxGeometry(1*y(d.duration),1,1);
-        let material = new THREE.MeshPhongMaterial( {color: c(d.loudness_max), shininess: 10})
+        // const geometry = new THREE.BoxBufferGeometry(1*y(d.duration),1,1, 9, 9);
+        // const material = new THREE.MeshPhongMaterial( {color: c(d.loudness_max), shininess: 10})
+        // let bar = new THREE.Mesh( geometry, material );
+        
+        const geometry = new THREE.CylinderGeometry(1,1,1*y(d.duration),10, 10);
+        const material = new THREE.MeshPhongMaterial( {color: c(d.loudness_max), shininess: 10})
         let bar = new THREE.Mesh( geometry, material );
+
         scene.add( bar );
         bar = positionBar(bar, d)
             
@@ -95,6 +100,8 @@ function showData(){
 
         let evenTurn = false; //d.segment%110 > nPerTurn;
         let radiusFactor = evenTurn ? 1.2 : 1;
+        // bar.rotation.z += 90;
+        // bar.translateOnAxis( (1,0,0), 3 )
 
         // Set Object Position
         bar.position.x = Math.cos(angleStep * d.segment) * (radius * radiusFactor + y(d.duration) / 2);
