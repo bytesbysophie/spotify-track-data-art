@@ -7,7 +7,7 @@ function init() {
 }
 
 /**
- * Loads the data from csv
+ * Loads the data from csv via D3 JS
  */
 function loadData() {
     return Promise.all([
@@ -16,7 +16,7 @@ function loadData() {
     ]).then(datasets => {
         data = datasets[0]
         
-        // TEST TO BE REMOVED !!!!!!!!!!!!!!!!!!!!
+        // TEST - TO BE REMOVED
         //======================================================================================================//
         console.log(data)
 
@@ -30,11 +30,6 @@ function loadData() {
 function showData(){ 
     const barHeightMax = 15;
     const innerWidth = data.length
-    const n = data.length;
-    const radius = 10;
-    const nPerTurn = 55;
-    const angleStep = (Math.PI * 2) / nPerTurn;
-    const heightStep = 0.06;
 
     // ADD EVENTLISTENER FOR INTERACTION ELEMENTS
     //======================================================================================================//
@@ -45,20 +40,21 @@ function showData(){
     //======================================================================================================//
    
     const scene = new THREE.Scene();
-    const camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, near = 0.1, far = 1000 );
+    const camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, near = 0.1, far = 1000);
     const renderer = new THREE.WebGLRenderer({antialias: true, alpha: 1});
+
     renderer.setSize(window.innerWidth, window.innerHeight)
     document.body.appendChild(renderer.domElement)
 
-    // DEFINE SCALES
+    // DEFINE SCALES WITH D3 JS
     //======================================================================================================//
    
     // Create scales for the position and lenght of the segment bars
     const x = d3.scaleBand().range([0, innerWidth]);
     const y = d3.scaleLinear().range([0, barHeightMax]);
     const c = d3.scaleLinear()
-        .interpolate(d3.interpolateHcl)
-        .range([d3.rgb('#3f5efb'), d3.rgb("#fc466b")]);
+        .interpolate(d3.interpolateRgb)
+        .range([d3.rgb('#ed4df5'), d3.rgb("#3f5efb")]);
 
     // TODO: Color of the 12 segment bar pitches (one differently colored section per pitch) 
     // const c = d3.scaleLinear()
@@ -72,11 +68,17 @@ function showData(){
 
     y.domain(y_domain);
     x.domain(x_domain);
-    c.domain(c_domain)
+    c.domain(c_domain);
 
-    // ADD BARS
+    // ADD BARS IN SPIRAL FORM
     //======================================================================================================//
    
+    const n = data.length;
+    const radius = 10;
+    const nPerTurn = 60;
+    const angleStep = (Math.PI * 2) / nPerTurn;
+    const heightStep = 0.06;
+
     const createBar = (d) => {
         let geometry = new THREE.BoxGeometry(1*y(d.duration),1,1);
         let material = new THREE.MeshPhongMaterial( {color: c(d.loudness_max), shininess: 10})
@@ -91,14 +93,13 @@ function showData(){
     // the defined bar dimensions and the platform height
     const positionBar = (bar, d) => {
 
-          // Set Object Position
-        bar.position.set(
-            // Math.cos(angleStep * i) * radius,
-            (Math.cos(angleStep * d.segment) * (radius + y(d.duration) / 2)),
+        let evenTurn = false; //d.segment%110 > nPerTurn;
+        let radiusFactor = evenTurn ? 1.2 : 1;
 
-            heightStep * d.segment,
-            Math.sin(angleStep * d.segment) * (radius + y(d.duration) / 2)
-        );
+        // Set Object Position
+        bar.position.x = Math.cos(angleStep * d.segment) * (radius * radiusFactor + y(d.duration) / 2);
+        bar.position.y = heightStep * d.segment;
+        bar.position.z = Math.sin(angleStep * d.segment) * (radius * radiusFactor + y(d.duration) / 2);
 
         // Rotate Object
         bar.rotation.y = -angleStep * d.segment;
