@@ -75,15 +75,11 @@ function showData(){
    
     const n = data.length;
     const radius = 8;
-    const nPerTurn = 60;
+    const nPerTurn = 50;
     const angleStep = (Math.PI * 2) / nPerTurn;
-    const heightStep = 0.06;
+    const heightStep = 0.04;
 
     const createBar = (d) => {
-        // const geometry = new THREE.BoxBufferGeometry(1*y(d.duration),1,1, 9, 9);
-        // const material = new THREE.MeshPhongMaterial( {color: c(d.loudness_max), shininess: 10})
-        // let bar = new THREE.Mesh( geometry, material );
-        
         const geometry = new THREE.CylinderBufferGeometry(0.5, 0.5, 1*y(d.duration),50, 10);
         const material = new THREE.MeshPhongMaterial( {color: c(d.loudness_max), shininess: 10})
         let bar = new THREE.Mesh( geometry, material );
@@ -117,6 +113,7 @@ function showData(){
 
     // Create a bar for each entry in data
     bars = []
+    barGroup = new THREE.Group();
     data.forEach((d, i) => { 
         bar = {
             mesh: createBar(d, i),
@@ -124,12 +121,25 @@ function showData(){
             i: i
         }
         bars.push(bar);
-        scene.add(bar.mesh);
+        
+        barGroup.add(bar.mesh);
     })
+
+    scene.add(barGroup)
+
+    // barGroup.rotation.z = 45;
 
     // ADD LIGHT 
     //======================================================================================================//
    
+    const lightColor = "white";
+    const lightIntensity = 0.8;
+    const lightSourceVisible = false;
+    const lightSourcesConfig = [
+        {color: lightColor, intensity: lightIntensity, x: 0, y: heightStep*n * 2, z: 0, visible: lightSourceVisible},
+        {color: lightColor, intensity: lightIntensity, x: 0, y: -heightStep*n, z: 0, visible: lightSourceVisible}
+    ]
+
     const createLightSource = (light, position, showLightGeometry = false) => {
     
         // If geometry and material are passed, mesh them and add them to screen in the light postion
@@ -146,17 +156,13 @@ function showData(){
         scene.add( light );
     }
 
-    createLightSource(
-        light = new THREE.DirectionalLight("white", 0.5), 
-        position = {x: -10, y: 10, z: 0},
-        showLightGeometry = false
-    )
-
-    createLightSource(
-        light = new THREE.DirectionalLight("white", 0.5), 
-        position = {x: 10, y: 10, z: 0},
-        showLightGeometry = false
-    )
+    lightSourcesConfig.forEach(l => {
+        createLightSource(
+            light = new THREE.DirectionalLight(l.color, l.intensity), 
+            position = {x: l.x, y: l.y, z: l.z},
+            showLightGeometry = l.visible
+        )
+    });
 
     const lightAmbient = new THREE.AmbientLight("white")
     scene.add( lightAmbient );
@@ -165,8 +171,7 @@ function showData(){
     //======================================================================================================//
     
     // Adjust camera position to make the object visable
-    camera.position.set(0, 50, 20);
-    // camera.position.set(0, 15, 0);
+    camera.position.set(0, 50, 10);
 
     // Position scene vertically
     scene.position.y -= n * heightStep / 2;
