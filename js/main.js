@@ -97,7 +97,6 @@ function showData(){
         sphereOuter.position.y = -1*y(d.duration)/2;
         bar.add(sphereOuter)
 
-        scene.add( bar );
         positionBar(bar, d)
             
         return bar
@@ -116,29 +115,16 @@ function showData(){
 
         // Set Object Position
         bar.position.x = Math.cos(angleStep * d.segment) * (radius * radiusFactor + y(d.duration) / 2);
-        bar.position.y = heightStep * d.segment;
+        bar.position.y = (heightStep * d.segment) -(n*heightStep/2);
         bar.position.z = Math.sin(angleStep * d.segment) * (radius * radiusFactor + y(d.duration) / 2);
 
         bar.maxPositionY = bar.position.y;
     }
 
     // Create a bar for each entry in data
-    bars = []
-    barGroup = new THREE.Group();
-    data.forEach((d, i) => { 
-        bar = {
-            mesh: createBar(d, i),
-            d: d,
-            i: i
-        }
-        bars.push(bar);
-        
-        barGroup.add(bar.mesh);
-    })
-
+    const barGroup = new THREE.Group();
+    data.forEach((d, i) => { barGroup.add(createBar(d, i))})
     scene.add(barGroup)
-
-    // barGroup.rotation.z = 45;
 
     // ADD LIGHT 
     //======================================================================================================//
@@ -182,10 +168,7 @@ function showData(){
     //======================================================================================================//
     
     // Adjust camera position to make the object visable
-    camera.position.set(0, 50, 10);
-
-    // Position scene vertically
-    scene.position.y -= n * heightStep / 2;
+    camera.position.set(0, 0, 60);
 
     // TODO: REMOVE AXIS HELPER
     // const axesHelper = new THREE.AxesHelper( 100 );
@@ -208,7 +191,8 @@ function showData(){
         requestAnimationFrame(animate)
 
         if (isPlay) {
-            scene.rotation.y -= 0.001
+            // scene.rotation.y -= 0.001
+            barGroup.rotation.z += 0.005;
         }
 
     }
