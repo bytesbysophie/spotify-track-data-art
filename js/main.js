@@ -74,18 +74,31 @@ function showData(){
     //======================================================================================================//
    
     const n = data.length;
-    const radius = 8;
-    const nPerTurn = 50;
+    const radius = 10;
+    const nPerTurn = 65;
     const angleStep = (Math.PI * 2) / nPerTurn;
-    const heightStep = 0.04;
+    const heightStep = 0.08;
 
     const createBar = (d) => {
-        const geometry = new THREE.CylinderBufferGeometry(0.5, 0.5, 1*y(d.duration),50, 10);
-        const material = new THREE.MeshPhongMaterial( {color: c(d.loudness_max), shininess: 10})
-        let bar = new THREE.Mesh( geometry, material );
+        const bar = new THREE.Group()
+        const cylinderGeo = new THREE.CylinderBufferGeometry(0.5, 0.5, 1*y(d.duration),50, 10);
+        const sphereGeo = new THREE.SphereGeometry(0.5, 50, 5, 0, Math.PI*2, 0, Math.PI/2);
+        const material = new THREE.MeshPhongMaterial( {color: c(d.loudness_max), shininess: 20, opacity: 1, transparent: true})
+        
+        const cyninder = new THREE.Mesh( cylinderGeo, material );
+        bar.add(cyninder)
+
+        const sphereInner = new THREE.Mesh(sphereGeo, material)
+        sphereInner.position.y = 1*y(d.duration)/2;
+        bar.add(sphereInner)
+
+        const sphereOuter = sphereInner.clone();
+        sphereOuter.rotation.z = Math.PI;
+        sphereOuter.position.y = -1*y(d.duration)/2;
+        bar.add(sphereOuter)
 
         scene.add( bar );
-        bar = positionBar(bar, d)
+        positionBar(bar, d)
             
         return bar
     }
@@ -107,8 +120,6 @@ function showData(){
         bar.position.z = Math.sin(angleStep * d.segment) * (radius * radiusFactor + y(d.duration) / 2);
 
         bar.maxPositionY = bar.position.y;
-
-        return bar;
     }
 
     // Create a bar for each entry in data
@@ -133,7 +144,7 @@ function showData(){
     //======================================================================================================//
    
     const lightColor = "white";
-    const lightIntensity = 0.8;
+    const lightIntensity = 0.2;
     const lightSourceVisible = false;
     const lightSourcesConfig = [
         {color: lightColor, intensity: lightIntensity, x: 0, y: heightStep*n * 2, z: 0, visible: lightSourceVisible},
@@ -145,7 +156,7 @@ function showData(){
         // If geometry and material are passed, mesh them and add them to screen in the light postion
         if(showLightGeometry) {
             let geometry = new THREE.SphereGeometry(1,10,10);
-            let material = new THREE.MeshPhongMaterial( {color: "white", transparent: true, shininess: 100})
+            let material = new THREE.MeshLambertMaterial( {color: "white", transparent: true, shininess: 100})
             let sphere = new THREE.Mesh(geometry, material);      
             sphere.position.set(position.x, position.y, position.z)
             scene.add( sphere );
