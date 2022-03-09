@@ -1,6 +1,9 @@
-
+const maxZoom = 50
+var currentZoom = maxZoom;
 var isPlay = true;
-var data = null;
+var zoomIn = true;
+var data = null;   
+
 
 function init() {
     loadData().then(showData);
@@ -15,10 +18,6 @@ function loadData() {
 
     ]).then(datasets => {
         data = datasets[0]
-        
-        // TEST - TO BE REMOVED
-        //======================================================================================================//
-        console.log(data)
 
         return data;
     })
@@ -164,13 +163,16 @@ function showData(){
     const lightAmbient = new THREE.AmbientLight("white")
     scene.add( lightAmbient );
 
-    // ADJUST CAMERA A & SCENE SETTINGS
+    // ADJUST OBJECT, CAMERA & SCENE SETTINGS
     //======================================================================================================//
     
     // Adjust camera position to make the object visable
     camera.position.set(0, 0, 60);
 
-    // TODO: REMOVE AXIS HELPER
+    // Rotate group
+    barGroup.rotation.z = Math.PI / 2
+    barGroup.rotation.y+= Math.PI / 2
+
     // const axesHelper = new THREE.AxesHelper( 100 );
     // scene.add( axesHelper );
 
@@ -189,10 +191,28 @@ function showData(){
 
         // Set up endless repetition/ loop
         requestAnimationFrame(animate)
-
+        let zoomStep = 0.25;
         if (isPlay) {
-            // scene.rotation.y -= 0.001
-            barGroup.rotation.z += 0.005;
+            // barGroup.rotation.x -= 0.01;
+            // barGroup.rotation.y+= 0.01;
+            // barGroup.rotation.z += 0.01;
+            scene.rotation.z += 0.005
+
+            if(currentZoom > 0 && zoomIn) {
+                camera.position.z -= zoomStep
+                currentZoom -= zoomStep;
+            }
+            else if(currentZoom <= 0 && zoomIn) {
+                zoomIn = !zoomIn;
+            }
+            else if(currentZoom < maxZoom && !zoomIn) {
+                camera.position.z += zoomStep
+                currentZoom += zoomStep;
+            }
+            else if(currentZoom >= maxZoom && !zoomIn) {
+                zoomIn = !zoomIn;
+            }
+
         }
 
     }
