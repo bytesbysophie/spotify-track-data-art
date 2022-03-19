@@ -2,6 +2,7 @@ const maxZoom = 50
 var currentZoom = maxZoom;
 var isPlay = true;
 var zoomIn = true;
+var capture = true;
 var data = null;   
 
 
@@ -40,7 +41,7 @@ function showData(){
    
     const scene = new THREE.Scene();
     const camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, near = 0.1, far = 1000);
-    const renderer = new THREE.WebGLRenderer({antialias: true, alpha: 1});
+    const renderer = new THREE.WebGLRenderer({antialias: true, alpha: 0});
 
     renderer.setSize(window.innerWidth, window.innerHeight)
     document.body.appendChild(renderer.domElement)
@@ -176,7 +177,19 @@ function showData(){
     // const axesHelper = new THREE.AxesHelper( 100 );
     // scene.add( axesHelper );
 
-    // ITERACTION 
+    // CAPTURER TO CREATE VIDEO
+    //======================================================================================================//
+
+    // Create a capturer that exports a WebM video
+    var capturer = capture ? new CCapture( {
+        verbose: false,
+        display: true,
+        framerate: 25,
+        quality: 70,
+        format: 'webm' 
+    } ) : false;
+
+    // ANIMATION & ITERACTION 
     //======================================================================================================//
 
     // Add controls to move the camera
@@ -185,18 +198,19 @@ function showData(){
     controls.update();
 
     const animate = () => {
-     
-        // Render the scene according to the camera settings
-        renderer.render(scene, camera)
 
         // Set up endless repetition/ loop
         requestAnimationFrame(animate)
-        let zoomStep = 0.25;
+
+        // Render the scene according to the camera settings
+        renderer.render(scene, camera)
+
+        let zoomStep = 0.3;
         if (isPlay) {
             // barGroup.rotation.x -= 0.01;
             // barGroup.rotation.y+= 0.01;
             // barGroup.rotation.z += 0.01;
-            scene.rotation.z += 0.005
+            scene.rotation.z += 0.01
 
             if(currentZoom > 0 && zoomIn) {
                 camera.position.z -= zoomStep
@@ -214,11 +228,24 @@ function showData(){
             }
 
         }
+        if( capturer ) capturer.capture( renderer.domElement );
 
     }
 
     // Call function to animate in a loop
     animate()
+
+    if( capturer ) {
+        capturer.start();
+        window.setTimeout(() => {
+            capturer.stop();
+    
+            // default save, will download automatically a file called {name}.extension (webm/gif/tar)
+            capturer.save();
+        
+        }, 15000);
+    
+    }
 
     // REACT TO RESIZE 
     //======================================================================================================//
